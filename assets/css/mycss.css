@@ -1,0 +1,21 @@
+.modal-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 350px;
+    z-index: 9;
+    animation-name: modalLogin;
+    animation-duration: 1s;
+}
+
+@keyframes modalLogin {
+    from {
+        top: -10px;
+        opacity: 0;
+    }
+
+    to {
+        top: 20px;
+        opacity: 1;
+    }
+}
