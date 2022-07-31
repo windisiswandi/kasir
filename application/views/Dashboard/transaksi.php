@@ -3,6 +3,7 @@
         cursor: pointer;
     }
 </style>
+<!-- modal -->
 <div class="modal fade" id="modal-transaksi" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -32,6 +33,7 @@
         </div>
     </div>
 </div>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col">
@@ -53,6 +55,10 @@
                             <label for="exampleInputEmail1" class="font-weight-bold">Kode Product</label>
                             <input type="text" class="form-control" name="kd_produk" required>
                         </div>
+                        <div class="form-group mr-3">
+                            <label for="exampleInputEmail1" class="font-weight-bold">Diskon</label>
+                            <input type="text" class="form-control" name="diskon">
+                        </div>
                         <div class="form-group">
                             <label for="exampleInputEmail1" class="font-weight-bold">Qty</label>
                             <input type="number" class="form-control" name="jml" value="1" required>
@@ -71,8 +77,9 @@
                             <tr>
                                 <th>Name Product</th>
                                 <th>Qty</th>
-                                <th>Product Price</th>
-                                <th>Total Product Price</th>
+                                <th>Harga</th>
+                                <th>Diskon</th>
+                                <th>Total</th>
                                 <th>#</th>
                             </tr>
                         </thead>
@@ -101,6 +108,26 @@
     </div>   
 </div>
 
+<span class="listProduk" data-toggle="modal" data-target="#listProduk"></span>
+
+<!-- Modal list produk -->
+<div class="modal fade" id="listProduk" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Daftar Produk</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php if($this->session->userdata("crudsukses")) : ?>
     <script>
         Swal.fire({
@@ -126,6 +153,7 @@
                     url: "<?= base_url('Dashboard/insertTransaksi/') ?>",
                     data: {
                         kd_produk:  $("input[name='kd_produk']").val(),
+                        diskon: $("input[name='diskon']").val(),
                         qty: $("input[name='jml']").val()
                     },
                     success: response => {
@@ -141,8 +169,8 @@
                         }
                     }
                 })
-            }else {
-
+            }else if (e.keyCode == 32) {
+                $('.listProduk').click()
             }
         })
 

@@ -84,6 +84,7 @@
 <script>
     updateKategory()
     $("#formKategory").slideToggle();
+    
     function addKategory() {
         $("#formKategory").slideToggle();
     }

@@ -1,21 +1,31 @@
 .modal-alert {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 350px;
-    z-index: 9;
-    animation-name: modalLogin;
-    animation-duration: 1s;
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	width: 350px;
+	z-index: 9;
+	animation-name: modalLogin;
+	animation-duration: 1s;
+}
+
+@media screen and (min-width: 576px) {
+	#addModal .modal-dialog {
+		max-width: 700px !important;
+	}
+
+	#listProduk .modal-dialog {
+		max-width: 1000px !important;
+	}
 }
 
 @keyframes modalLogin {
-    from {
-        top: -10px;
-        opacity: 0;
-    }
+	from {
+		top: -10px;
+		opacity: 0;
+	}
 
-    to {
-        top: 20px;
-        opacity: 1;
-    }
+	to {
+		top: 20px;
+		opacity: 1;
+	}
 }

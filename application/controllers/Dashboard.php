@@ -18,15 +18,15 @@ class Dashboard extends CI_Controller {
 		if (!$this->session->userdata("username")) {
 			redirect("Auth/login");
 		}else {
-			$this->_data["earningToday"] = $this->db->select("sum(jml_bayar) as total_bayar")
-													->from("pembayaran")->where("tgl_pembayaran", date("Y-m-d"))
+			$this->_data["earningToday"] = $this->db->select("sum(invoice_total) as total_bayar")
+													->from("invoices")->where("tgl_invoice", date("Y-m-d"))
 													->get()->row_array();
-			$this->_data["soldProduk"] = $this->db->get_where("penjualan", ["tgl_beli" => date("Y-m-d")])->num_rows();
+			// $this->_data["soldProduk"] = $this->db->get_where("penjualan", ["tgl_beli" => date("Y-m-d")])->num_rows();
 			$this->_data["produks"] = $this->db->select("*")
 											   ->from("produk")
-											   ->join("kategory_produk", "kategory_produk.id_kategory = produk.id_kategory")
+											   ->join("kategori", "kategori.id_kategori = produk.id_kategori")
 											   ->get()->result_array();
-			$this->_data["produk_kategory"] = $this->db->get("kategory_produk")->result_array();
+			$this->_data["produk_kategory"] = $this->db->get("kategori")->result_array();
 			$this->_data["dataUser"] = $this->db->get_where("user", ["username" =>  $this->session->userdata("username")])->row_array();
 		}
 	}
@@ -49,9 +49,9 @@ class Dashboard extends CI_Controller {
 
 	public function transaksi()
 	{
-		$this->_data["tLast"] = $this->db->select("nama_produk, jml_beli, hrg_jual, id_item")
+		$this->_data["tLast"] = $this->db->select("nama_produk, jml_beli, hrg_jual, diskon")
 										 ->from("temp_penjualan")
-										 ->where("id_user", $this->_data["dataUser"]["id_user"])
+										 ->where('id_user', $this->_data['dataUser']['id_user'])
 										 ->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
 										 ->get()->result_array();
 		$this->_data["title"] = "Transaksi";
@@ -133,9 +133,8 @@ class Dashboard extends CI_Controller {
 
 	public function insertKategory()
 	{
-		$data["kategory"] = $this->input->post("kategory");
-		$data["id_kategory"] = $this->input->post("id_kategory");
-		if ($this->db->insert("kategory_produk", $data)) {
+		$data["nama_kategori"] = $this->input->post("kategory");
+		if ($this->db->insert("kategori", $data)) {
 			echo json_encode(["status"=>true, "msg"=>"kategory berhasil di tambahkan"]);
 		}else {
 			echo json_encode(["status"=>false, "msg"=>"Gagal menambah kategory"]);
@@ -143,12 +142,12 @@ class Dashboard extends CI_Controller {
 	}
 	public function updateKategory()
 	{
-		$kategory = $this->db->get("kategory_produk")->result_array();
+		$kategory = $this->db->get("kategori")->result_array();
 		$data["data"] = [];
 		foreach ($kategory as $k) {
 			$data["data"][] = [
-				"kategory" => $k["kategory"],
-				"id_kategory" => $k["id_kategory"]
+				"kategory" => $k["nama_kategori"],
+				"id_kategory" => $k["id_kategori"]
 			];
 		}
 
@@ -160,17 +159,19 @@ class Dashboard extends CI_Controller {
 	public function insertTransaksi()
 	{
 		$kd_produk = $this->input->post("kd_produk");
+		$diskon = $this->input->post("diskon");
 		$jml = $this->input->post("qty");
 		$produk = $this->db->get_where("produk", ["kd_produk" => $kd_produk]);
+
 		if ($produk->num_rows()) {
 			if (!($produk->row_array()["stok"] <= 0)) {
-				$this->db->update("produk", ["stok"=>$produk->row_array()["stok"]-$jml], "kd_produk = $kd_produk");
+				$this->db->update("produk", ["stok"=>$produk->row_array()["stok_produk"]-$jml], "kd_produk = $kd_produk");
 			}	
 
 			$dataTransaksi = [
 				"kd_produk" => $kd_produk,
 				"jml_beli" => $jml,
-				"tgl_beli" => date("Y-m-d"),
+				"diskon" => $diskon,
 				"id_user" => $this->_data["dataUser"]["id_user"]
 			];
 			

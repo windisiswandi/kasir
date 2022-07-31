@@ -51,7 +51,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add Your Product</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Tambah produk</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
@@ -61,17 +61,17 @@
                         <div class="msg"></div>
                         <div class="form-row">
                             <div class="form-group col">
-                                <label for="exampleInputEmail1" class="font-weight-bold">Kode Product</label>
+                                <label for="exampleInputEmail1" class="font-weight-bold">Kode Produk</label>
                                 <input type="text" class="form-control" name="kd_produk" required>
                             </div>
                             <div class="form-group col">
-                                <label for="exampleInputEmail1" class="font-weight-bold">Name Product</label>
+                                <label for="exampleInputEmail1" class="font-weight-bold">Nama Produk</label>
                                 <input type="text" class="form-control" name="nama_produk" required>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group col">
-                                <label for="exampleInputPassword1" class="font-weight-bold">Product Price</label>
+                                <label for="exampleInputPassword1" class="font-weight-bold">Harga Jual</label>
                                 <div class="input-group mb-2">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text">Rp</div>
@@ -99,12 +99,12 @@
                                 <label class="font-weight-bold" style="margin-right: 10px;">Kategory</label><span class="badge bg-success" onclick="addKategory()"><i class="fas fa-plus text-white"></i></span>
                                 <select class="custom-select mr-sm-2" name="id_kategory">
                                     <?php foreach($produk_kategory as $ctg) : ?>
-                                        <option value="<?= $ctg['id_kategory']; ?>"><?= $ctg["kategory"]; ?></option>                               
+                                        <option value="<?= $ctg['id_kategori']; ?>"><?= $ctg["nama_kategori"]; ?></option>                               
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-row align-items-center" id="formKategory">
+                        <div class="form-row align-items-center" id="formKategory" style="display: none;">
                             <div class="form-group col-auto">
                                 <button type="button" class="close" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -128,13 +128,13 @@
     </div>
 
     <script>
-        updateKategory()
-        $("#formKategory").slideToggle();
+        // updateKategory()
+        
         function addKategory() {
             $("#formKategory").slideToggle();
         }
 
-        $(".close").click(() => {
+        $("#formKategory .close").click(() => {
             $("#formKategory").slideToggle()
             $("input[name='kategory']").val('')
         })
@@ -144,12 +144,11 @@
                 url: `<?= base_url('Dashboard/insertKategory') ?>`,
                 type: "POST", 
                 data: {
-                    kategory: $("input[name='kategory']").val(),
-                    id_kategory: <?= str_shuffle("123456") ?>
+                    kategory: $("input[name='kategory']").val()
                 },
                 dataType: "json",
                 success: (response) => {
-                    $("#formKategory").slideToggle();
+                    // $("#formKategory").slideToggle();
                     $("input[name='kategory']").val('')
                     if (response.status) {
                         $(".msg").html(`<div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -186,7 +185,7 @@
                     $("select[name='id_kategory']").html(option)
                 },
                 error: err => {
-                    alert(err);
+                    alert('kesalahan pada update kategori');
                 }
             })
         }
