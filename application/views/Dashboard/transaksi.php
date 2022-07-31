@@ -14,14 +14,13 @@
             </div>
             <form action="<?= base_url('Dashboard/prosesPayment') ?>" method="post" onsubmit="return cekPembayaran(this)">
                 <div class="modal-body">
-                    <input type="hidden" name="noresi" value="<?= $noresi ?>">
                     <div class="form-group col">
                         <label for="exampleInputEmail1" class="font-weight-bold">Total Bayar</label>
                         <input type="text" class="form-control" readonly name="jml_bayar">
                     </div>
                     <div class="form-group col">
                         <label for="exampleInputEmail1" class="font-weight-bold">Bayar</label>
-                        <input type="text" class="form-control" name="bayar" required>
+                        <input type="text" class="form-control" name="bayar" required autocomplete="off">
                     </div>
                     <div class="form-group col">
                         <label for="exampleInputEmail1" class="font-weight-bold">Kembalian</label>
@@ -41,7 +40,7 @@
                 <div
                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         <div class="col-auto">
-                            <h5 class="font-weight-bold text-primary">Transaction</h5>
+                            <h5 class="font-weight-bold text-primary">Transaksi</h5>
                         </div>
                         <div class="col-auto">
                             <span class="font-weight-bold" data-toggle="modal" data-target="#addModal">Press key F8 to Insert</span>
@@ -49,12 +48,6 @@
                 </div>
                 <!-- Card Body -->
                 <div class="card-body">
-                <div class="form-group row justify-content-start">
-                    <label class="col-sm-1 col-form-label font-weight-bold">No. Resi</label>
-                    <div class="col-sm-3">
-                        <input type="text" id="noresi" class="form-control" value="<?= $noresi; ?>" disabled>
-                    </div>
-                </div>
                     <div class="row mt-4">
                         <div class="form-group col-sm-3">
                             <label for="exampleInputEmail1" class="font-weight-bold">Kode Product</label>
@@ -84,22 +77,21 @@
                             </tr>
                         </thead>
                         <tbody id="transaksiBody">
-                            <?php if(count($tLast)) : ?>
-                                <?php foreach($tLast as $t) : ?>
-                                    <tr>
-                                        <td><?= $t["name_produk"]; ?></td>
-                                        <td><?= $t["jml_pembelian"]; ?></td>
-                                        <td><?= "Rp " . number_format($t["hrg_jual"],2,',','.'); ?></td>
-                                        <td>
-                                            <?php 
-                                                $total = $t["jml_pembelian"]*$t["hrg_jual"];
-                                                echo "Rp ".number_format($total, 2,',','.');
-                                            ?>
-                                        </td>
-                                        <td class="text-center text-danger" onclick="deleteTransaksiItem(<?= $t['id_transaksi'] ?>)" id="itemClose"><i class="fas fa-window-close"></i></a></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                        <?php if(count($tLast)) : ?>
+                            <?php foreach($tLast as $t) : ?>
+                                <tr>
+                                    <td><?= $t["nama_produk"]; ?></td>
+                                    <td><?= $t["jml_beli"]; ?></td>
+                                    <td><?= "Rp " . number_format($t["hrg_jual"],0,',','.'); ?></td>
+                                    <td>
+                                        <?php 
+                                            $total = $t["jml_beli"]*$t["hrg_jual"];
+                                            echo "Rp ".number_format($total, 0,',','.');
+                                        ?>
+                                    </td><td class="text-center text-danger" onclick="deleteTransaksiItem(<?= $t['id_item'] ?>)"><i class="fas fa-window-close"></i></a></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?> 
                         </tbody>
                     </table>
            
@@ -133,8 +125,7 @@
                     type: "POST",
                     url: "<?= base_url('Dashboard/insertTransaksi/') ?>",
                     data: {
-                        kd_product:  $("input[name='kd_produk']").val(),
-                        noresi : $("#noresi").val(),
+                        kd_produk:  $("input[name='kd_produk']").val(),
                         qty: $("input[name='jml']").val()
                     },
                     success: response => {
@@ -143,6 +134,7 @@
                             data = JSON.parse(data)
                             $("#msgError").text(data.msg)
                         }catch(err){
+                            $("input[name='kd_produk']").val('')
                             $("#transaksiBody").html(response)
                             $("#msgError").text("")
                             totalBayar()
@@ -180,7 +172,7 @@
     function deleteTransaksiItem(id_produk = null) {
         if (!id_produk) { 
             $.ajax({
-                url: `<?= base_url('Dashboard/deleteItemTransaksi/') ?>${$("#noresi").val()}`,
+                url: `<?= base_url('Dashboard/deleteItemTransaksi/') ?>`,
                 success: response => {
                     window.location.href = `<?= base_url("Dashboard/transaksi") ?>`
                 },
@@ -193,8 +185,7 @@
                 type: "POST",
                 url: "<?= base_url('Dashboard/deleteItemTransaksi/') ?>",
                 data: {
-                    id:  id_produk,
-                    noresi : $("#noresi").val()
+                    id:  id_produk
                 },
                 success: response => {
                     $("#transaksiBody").html(response)
@@ -214,7 +205,7 @@
             url: "<?= base_url('Dashboard/totalBayar/') ?>",
             dataType: "json",
             data: {
-                noresi : $("#noresi").val()
+                id_user: `<?= $dataUser["id_user"]; ?>`
             },
             success: response => {
                 $("#totalBayar").text(response.totalBayar)

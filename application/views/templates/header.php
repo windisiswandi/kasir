@@ -49,13 +49,18 @@
             <hr class="sidebar-divider">
             <!-- Heading -->
             <div class="sidebar-heading">
-                <?= $dataUser["role"]; ?>
+                <?= $dataUser["nama"]; ?>
             </div>
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="<?= base_url(); ?>">
+            <li class="nav-item active" >
+                <a class="nav-link" href="<?= base_url(); ?>" style="padding:16px 15px 5px 15px;">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url("Dashboard/produks"); ?>" style="padding:10px 15px 10px 15px;">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Produks</span></a>
             </li>
 
             <!-- Nav Item - Pages Collapse Menu -->
@@ -64,73 +69,40 @@
             <hr class="sidebar-divider">
 
             <!-- Heading -->
-            <?php if(strtolower($dataUser["role"]) == "administrator") : ?>
-                <div class="sidebar-heading">
-                    User
-                </div>
+     
+            <div class="sidebar-heading">
+                Laporan Penjualan
+            </div>
 
-                <!-- Nav Item - Pages Collapse Menu -->
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                        aria-expanded="true" aria-controls="collapsePages">
-                        <i class="fas fa-fw fa-folder"></i>
-                        <span>List User</span>
-                    </a>
-                    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Login Screens:</h6>
-                            <a class="collapse-item" href="login.html">Login</a>
-                            <a class="collapse-item" href="register.html">Register</a>
-                            <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
-                            <div class="collapse-divider"></div>
-                            <h6 class="collapse-header">Other Pages:</h6>
-                            <a class="collapse-item" href="404.html">404 Page</a>
-                            <a class="collapse-item" href="blank.html">Blank Page</a>
-                        </div>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                        aria-expanded="true" aria-controls="collapsePages">
-                        <i class="fas fa-fw fa-folder"></i>
-                        <span>Pages</span>
-                    </a>
-                </li>
-            <?php else : ?>
-                <div class="sidebar-heading">
-                    Laporan Penjualan
-                </div>
+            <!-- Nav Item - Pages Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url('Dashboard/laporan_harian') ?>" style="padding:16px 15px 5px 15px;">
+                    <i class="fas fa-table"></i>
+                    <span>Laporan Harian</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url('Dashboard/laporan_bulanan') ?>" style="padding:10px 15px 5px 15px;">
+                    <i class="fas fa-table"></i>
+                    <span>Laporan Bulanan</span>
+                </a>
+            </li>
 
-                <!-- Nav Item - Pages Collapse Menu -->
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= base_url('Dashboard/laporan_harian') ?>" style="padding:16px 15px 5px 15px;">
-                        <i class="fas fa-table"></i>
-                        <span>Laporan Harian</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= base_url('Dashboard/laporan_bulanan') ?>" style="padding:10px 15px 5px 15px;">
-                        <i class="fas fa-table"></i>
-                        <span>Laporan Bulanan</span>
-                    </a>
-                </li>
-
-                <div class="sidebar-heading" style="margin-top: 20px;">
-                    Transaction
-                </div>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= base_url('Dashboard/transaksi') ?>" style="padding:16px 15px 5px 15px;">
-                        <i class="fas fa-table"></i>
-                        <span>Transaction</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= base_url('Dashboard/riwayat_transaksi') ?>" style="padding:10px 15px 5px 15px;">
-                        <i class="fas fa-table"></i>
-                        <span>Riwayat Transaction</span>
-                    </a>
-                </li>
-            <?php endif; ?>
+            <div class="sidebar-heading" style="margin-top: 20px;">
+                Transaksi
+            </div>
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url('Dashboard/transaksi') ?>" style="padding:16px 15px 5px 15px;">
+                    <i class="fas fa-table"></i>
+                    <span>Transaksi</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url('Dashboard/riwayat_transaksi') ?>" style="padding:10px 15px 5px 15px;">
+                    <i class="fas fa-table"></i>
+                    <span>Riwayat Transaksi</span>
+                </a>
+            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block mt-4">
@@ -185,15 +157,14 @@
                         </li>
 
                         <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
+                        <!-- <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
-                                <!-- Counter - Alerts -->
                                 <span class="badge badge-danger badge-counter">3+</span>
-                            </a>
+                            </a> -->
                             <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            <!-- <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="alertsDropdown">
                                 <h6 class="dropdown-header">
                                     Alerts Center
@@ -233,18 +204,17 @@
                                 </a>
                                 <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
                             </div>
-                        </li>
+                        </li> -->
 
                         <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
+                        <!-- <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-envelope fa-fw"></i>
-                                <!-- Counter - Messages -->
                                 <span class="badge badge-danger badge-counter">7</span>
-                            </a>
+                            </a> -->
                             <!-- Dropdown - Messages -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            <!-- <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="messagesDropdown">
                                 <h6 class="dropdown-header">
                                     Message Center
@@ -299,7 +269,7 @@
                                 </a>
                                 <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
                             </div>
-                        </li>
+                        </li> -->
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
@@ -307,31 +277,13 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= strtoupper($dataUser["name_user"]); ?></span>
-                                <?php if(file_exists($dataUser["img"])) : ?>
-                                    <img class="img-profile rounded-circle"
-                                    src="<?= base_url().$dataUser['img']; ?>">
-                                <?php else : ?>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= strtoupper($dataUser["username"]); ?></span>
                                     <img class="img-profile rounded-circle"
                                     src="<?= base_url('assets/'); ?>img/undraw_profile.svg">
-                                <?php endif; ?>
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="<?= base_url('Dashboard/updateUser/').$this->session->userdata('email') ?>" >
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout

@@ -15,36 +15,19 @@ class Dashboard extends CI_Controller {
 		$this->load->model("Data_model");
 		$this->load->library("form_validation");
 
-		if ($this->session->userdata("passwordLogin")) {
-			$this->_data["dataUser"] = $this->db->select("*")
-											->from("user")
-											->where("email", $this->session->userdata("email"))
-											->join('role_user', 'role_user.role_id = user.role_id')
-											->get()->row_array();
-			
-			if ($this->_data["dataUser"]["role_id"] == 2) {		
-
-				$this->dbuser = $this->Data_model->dbuser($this->_data["dataUser"]);
-				
-				$this->make_table_user();
-				$this->_data["produks"] = $this->dbuser->select("*")
-													   ->from("produk")
-													   ->join("kategory_produk", "kategory_produk.id_kategory = produk.id_kategory")
-													   ->get()->result_array();
-				$this->_data["produk_kategory"] = $this->dbuser->get("kategory_produk")->result_array();
-				$this->_data["productSold"] = $this->dbuser->get_where("transaksi", ["tgl_transaksi" => date("Y-m-d")])->num_rows();
-				$this->_data["earningToday"] = $this->dbuser->select("sum(jml_bayar) as total_bayar")
-															->from("pembayaran")
-															->where("tgl_pembayaran", date("Y-m-d"))
-															->get()->row_array();
-			}else {
-				$this->_data["users"] = $this->db->select("*")
-												 ->from("user")
-												 ->join("role_user", "role_user.role_id = user.role_id")
-												 ->get()->result_array();
-			}								
-		}else {
+		if (!$this->session->userdata("username")) {
 			redirect("Auth/login");
+		}else {
+			$this->_data["earningToday"] = $this->db->select("sum(jml_bayar) as total_bayar")
+													->from("pembayaran")->where("tgl_pembayaran", date("Y-m-d"))
+													->get()->row_array();
+			$this->_data["soldProduk"] = $this->db->get_where("penjualan", ["tgl_beli" => date("Y-m-d")])->num_rows();
+			$this->_data["produks"] = $this->db->select("*")
+											   ->from("produk")
+											   ->join("kategory_produk", "kategory_produk.id_kategory = produk.id_kategory")
+											   ->get()->result_array();
+			$this->_data["produk_kategory"] = $this->db->get("kategory_produk")->result_array();
+			$this->_data["dataUser"] = $this->db->get_where("user", ["username" =>  $this->session->userdata("username")])->row_array();
 		}
 	}
 
@@ -56,98 +39,26 @@ class Dashboard extends CI_Controller {
 		$this->load->view('templates/footer', $this->_data);
 	}
 
+	public function produks()
+	{
+		$this->_data["title"] = "DASHBOARD | PRODUK";
+		$this->load->view('templates/header', $this->_data);
+		$this->load->view('Dashboard/produks', $this->_data);
+		$this->load->view('templates/footer', $this->_data);
+	}
+
 	public function transaksi()
 	{
-		$transaksi = $this->dbuser->get_where("transaksi", ["tgl_transaksi" => date("Y-m-d")])->result_array();
-		$this->_data["tLast"] = [];
-		if (count($transaksi)) {
-			if ($transaksi[count($transaksi) - 1]["kode_pembayaran"] == "") {
-				$this->_data["noresi"] = $transaksi[count($transaksi) - 1]["no_resi"];
-				$this->_data["tLast"] = $this->dbuser->select("*")
-													 ->from("transaksi")
-													 ->where("no_resi", $this->_data["noresi"])
-													 ->join("produk", "produk.kd_produk = transaksi.kd_produk")
-													 ->get()->result_array();
-			}else {
-				$this->_data["noresi"] = $transaksi[count($transaksi) - 1]["no_resi"];
-				$this->_data["noresi"] = substr($this->_data["noresi"], -4);
-				$this->_data["noresi"] = intval($this->_data["noresi"]) + 1;
-				$this->_data["noresi"] = "T-".date("dmy").sprintf("%04s", strval($this->_data["noresi"]));
-			}
-		}else {
-			$this->_data["noresi"] = "T-".date("dmy")."0001";
-		}
-
-		$this->_data["title"] = "Transaction";
+		$this->_data["tLast"] = $this->db->select("nama_produk, jml_beli, hrg_jual, id_item")
+										 ->from("temp_penjualan")
+										 ->where("id_user", $this->_data["dataUser"]["id_user"])
+										 ->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
+										 ->get()->result_array();
+		$this->_data["title"] = "Transaksi";
 		$this->load->view('templates/header', $this->_data);
 		$this->load->view('Dashboard/transaksi', $this->_data);
 		$this->load->view('templates/footer');
 	}
-
-
-
-
-// ======================================== CRUD USER =============================================== //
-
-	public function insertUser()
-    {
-		$this->_data["title"] = "DASHBOARD | Insert User";
-		if ($this->session->userdata("role_id") == 1) {
-	
-			if ($this->input->post("submit")) {
-				$data = [
-					"name_user" => $this->input->post("name_user"),
-					"email" => $this->input->post("email"),
-					"password" => password_hash($this->input->post("password"), PASSWORD_DEFAULT),
-					"is_active" => true,
-					"date_created" => date("Y-m-d"),
-					"role_id" => 1
-				];
-
-				if ($this->Data_model->addUser($data)) {
-					$this->session->set_userdata("crudsukses", "User Successfully to Added");
-					redirect("Dashboard");
-				}
-
-			}else {
-				$this->load->view("templates/header", $this->_data);
-				$this->load->view("Dashboard/create_user");
-				$this->load->view("templates/footer");
-			}
-		}else {
-			redirect();
-		}
-    }
-
-	public function updateUser($email)
-    {
-		$this->_data["title"] = "DASHBOARD | Insert User";
-		if ($this->session->userdata("role_id") == 1) {
-			$this->_data["dataUser"] = $this->db->select("*")
-												 ->from("user")
-												 ->join("role_user", "role_user.role_id = user.role_id")
-												 ->get()->row_array();
-			if ($this->input->post("submit")) {
-				$data = [
-					"name_user" => $this->input->post("name_user"),
-					"email" => $this->input->post("email")
-				];
-				$id_user = $this->input->post('id_user');
-
-				if ($this->Data_model->updateUser($data, $id_user)) {
-					$this->session->set_userdata("crudsukses", "User Successfully to Updated");
-					redirect("Dashboard");
-				}
-			}else {
-				$this->load->view("templates/header", $this->_data);
-				$this->load->view("Dashboard/update_user", $this->_data);
-				$this->load->view("templates/footer");
-			}
-		}else {
-			redirect();
-		}
-    }
-
 
 // ======================================== CRUD PRODUK =============================================== //
 
@@ -155,23 +66,22 @@ class Dashboard extends CI_Controller {
 	{
 		$data = [
 			"kd_produk" => $this->input->post("kd_produk"),
-			"name_produk" => $this->input->post("name_produk"),
+			"nama_produk" => $this->input->post("nama_produk"),
 			"hrg_produk" => $this->input->post("hrg_produk"),
 			"hrg_jual" => $this->input->post("hrg_jual"),
-			"volume" => $this->input->post("volume"),
 			"id_kategory" => $this->input->post("id_kategory"),
-			"stok_produk" => $this->input->post("stok")
+			"stok" => $this->input->post("stok")
 		];
 
-		if ($this->dbuser->insert("produk", $data)) {
+		if ($this->Data_model->insertProduk($data)) {
 			$this->session->set_userdata("crudsukses", "Produk Successfully to Added");
-			redirect("Dashboard");
+			redirect("Dashboard/produks");
 		}
 	}
 
 	public function updateProduk($kd_produk = null)
 	{
-		$data = $this->dbuser->get_where("produk", ["kd_produk" => $kd_produk])->row_array();
+		$data = $this->db->get_where("produk", ["kd_produk" => $kd_produk])->row_array();
 
 		if ($kd_produk) {
 
@@ -181,22 +91,20 @@ class Dashboard extends CI_Controller {
 
 					$dataUpdate = [
 						"kd_produk" => $this->input->post("kd_produk"),
-						"name_produk" => $this->input->post("name_produk"),
+						"nama_produk" => $this->input->post("nama_produk"),
 						"hrg_produk" => $this->input->post("hrg_produk"),
 						"hrg_jual" => $this->input->post("hrg_jual"),
-						"volume" => $this->input->post("volume"),
 						"id_kategory" => $this->input->post("id_kategory"),
-						"stok_produk" => $this->input->post("stok"),
+						"stok" => $this->input->post("stok")
 					];
-					$this->dbuser->where("kd_produk", $dataUpdate["kd_produk"]);
 					
-					if ($this->dbuser->update("produk", $dataUpdate)) {
+					if ($this->Data_model->updateProduk($dataUpdate)) {
 						$this->session->set_userdata("crudsukses", "Produk Successfully to Updated");
-						redirect("Dashboard");
+						redirect("Dashboard/produks");
 					}
 	
 				}else {
-					$this->_data["title"] = "DASHBOARD | Update";
+					$this->_data["title"] = "DASHBOARD | UPDATE PRODUK";
 					$this->load->view('templates/header', $this->_data);
 					$this->load->view('Dashboard/update_produk', $data);
 					$this->load->view('templates/footer');
@@ -207,46 +115,69 @@ class Dashboard extends CI_Controller {
 			}
 
 		}else {
-			redirect("Dashboard");
+			redirect("Dashboard/produks");
 		}
 	}
 
 	public function deleteProduk($kd_produk = null)
 	{
 		if ($kd_produk) {
-			if ($this->dbuser->delete("produk", ["kd_produk" => $kd_produk])) {
+			if ($this->db->delete("produk", ["kd_produk" => $kd_produk])) {
 				$this->session->set_userdata("crudsukses", "Produk Successfullt to Deleted");
-				redirect("Dashboard");
+				redirect("Dashboard/produks");
 			}
 		}else {
-			redirect("Dashboard");
+			redirect("Dashboard/produks");
 		}
+	}
+
+	public function insertKategory()
+	{
+		$data["kategory"] = $this->input->post("kategory");
+		$data["id_kategory"] = $this->input->post("id_kategory");
+		if ($this->db->insert("kategory_produk", $data)) {
+			echo json_encode(["status"=>true, "msg"=>"kategory berhasil di tambahkan"]);
+		}else {
+			echo json_encode(["status"=>false, "msg"=>"Gagal menambah kategory"]);
+		}
+	}
+	public function updateKategory()
+	{
+		$kategory = $this->db->get("kategory_produk")->result_array();
+		$data["data"] = [];
+		foreach ($kategory as $k) {
+			$data["data"][] = [
+				"kategory" => $k["kategory"],
+				"id_kategory" => $k["id_kategory"]
+			];
+		}
+
+		echo json_encode($data);
 	}
 
 // ======================================== CRUD TRANSAKSI =============================================== //
 
 	public function insertTransaksi()
 	{
-		$kd_product = $this->input->post("kd_product");
+		$kd_produk = $this->input->post("kd_produk");
 		$jml = $this->input->post("qty");
-		$noresi = $this->input->post("noresi");
-		$produk = $this->dbuser->get_where("produk", ["kd_produk" => $kd_product]);
+		$produk = $this->db->get_where("produk", ["kd_produk" => $kd_produk]);
 		if ($produk->num_rows()) {
-			if (!($produk->row_array()["stok_produk"] <= 0)) {
-				$this->dbuser->update("produk", ["stok_produk"=>$produk->row_array()["stok_produk"]-$jml], "kd_produk = $kd_product");
+			if (!($produk->row_array()["stok"] <= 0)) {
+				$this->db->update("produk", ["stok"=>$produk->row_array()["stok"]-$jml], "kd_produk = $kd_produk");
 			}	
 
 			$dataTransaksi = [
-				"kd_produk" => $kd_product,
-				"jml_pembelian" => $jml,
-				"tgl_transaksi" => date("Y-m-d"),
-				"no_resi" => $noresi
+				"kd_produk" => $kd_produk,
+				"jml_beli" => $jml,
+				"tgl_beli" => date("Y-m-d"),
+				"id_user" => $this->_data["dataUser"]["id_user"]
 			];
 			
-			if ($this->dbuser->insert("transaksi", $dataTransaksi)) {
-				$result["data"] = $this->dbuser->select("*")->from("transaksi")
-															->where("no_resi", $noresi)
-															->join("produk", "produk.kd_produk = transaksi.kd_produk")
+			if ($this->db->insert("temp_penjualan", $dataTransaksi)) {
+				$result["data"] = $this->db->select("nama_produk, jml_beli, hrg_jual, id_item")->from("temp_penjualan")
+															->where("id_user", $this->_data["dataUser"]["id_user"])
+															->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
 															->get()->result_array();
 
 				return $this->load->view("transaksi/data", $result);
@@ -257,18 +188,20 @@ class Dashboard extends CI_Controller {
 		}
 	}
 	
-	public function deleteItemTransaksi($noresi = null)
+	public function deleteItemTransaksi()
 	{
-		if ($noresi) {
-			$this->dbuser->where("no_resi", $noresi);
-			$this->dbuser->delete("transaksi");
+		if (!$this->input->post("id")) {
+			$this->db->where("id_user",  $this->_data["dataUser"]["id_user"]);
+			$this->db->delete("temp_penjualan");
 		}else {
-			$this->dbuser->where("id_transaksi", $this->input->post("id"));
-			if ($this->dbuser->delete('transaksi')) {
-				$result["data"] = $this->dbuser->select("*")->from("transaksi")
-																->where("no_resi", $this->input->post("noresi"))
-																->join("produk", "produk.kd_produk = transaksi.kd_produk")
-																->get()->result_array();
+			$this->db->where("id_item", $this->input->post("id"));
+			$this->db->where("id_user", $this->_data["dataUser"]["id_user"]);
+			if ($this->db->delete('temp_penjualan')) {
+				$result["data"] = $this->db->select("nama_produk, jml_beli, hrg_jual, id_item")
+										   ->from("temp_penjualan")
+										   ->where("id_user", $this->_data["dataUser"]["id_user"])
+										   ->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
+										   ->get()->result_array();
 				return $this->load->view("transaksi/data", $result);
 			}
 		}
@@ -276,57 +209,80 @@ class Dashboard extends CI_Controller {
 
 	public function totalBayar()
 	{
-		$noresi = $this->input->post("noresi");
-		$data = $this->dbuser->select("hrg_jual, jml_pembelian")->from("transaksi")
-										->where("no_resi", $noresi)
-										->join("produk", "produk.kd_produk = transaksi.kd_produk")
+		$data = $this->db->select("hrg_jual, jml_beli")->from("temp_penjualan")
+										->where("id_user", $this->_data["dataUser"]["id_user"])
+										->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
 										->get()->result_array();
 		$totalBayar = 0;
 		foreach ($data as $bayar) {
-			$totalBayar += $bayar["hrg_jual"] * $bayar["jml_pembelian"];
+			$totalBayar += $bayar["hrg_jual"] * $bayar["jml_beli"];
 		}
 		echo json_encode(["totalBayar" => "Rp ".number_format($totalBayar,0,'','.')]);
 	}
 
 	public function prosesPayment()
 	{
-		$kode_pembayaran = "1234567890";
-		$kode_pembayaran = str_shuffle($kode_pembayaran);
+		$kode_pembayaran = str_shuffle("1234567890");
 		$jml_bayar = $this->input->post("jml_bayar");
-		// $jml_bayar = strstr_replace("Rp ", "", $jml_bayar);
-		$noresi = $this->input->post("noresi");
+		$noresi = $this->createFaktur();
 		$pembayaran = [
 			"kode_pembayaran" => $kode_pembayaran,
 			"jml_bayar" => $jml_bayar,
 			"tgl_pembayaran" => date("Y-m-d")
 		];
-		if ($this->dbuser->insert("pembayaran", $pembayaran)) {
-			$this->dbuser->where("no_resi", $noresi);
-			$this->dbuser->update("transaksi", ["kode_pembayaran"=>$kode_pembayaran]);
+
+		if ($this->db->insert("pembayaran", $pembayaran)) {
+			$dataTemp = $this->db->get_where("temp_penjualan", ["id_user" => $this->_data["dataUser"]["id_user"]])->result_array();
+			foreach ($dataTemp as $dp) {
+				$data = [
+					"kd_produk" => $dp["kd_produk"],
+					"jml_beli" => $dp["jml_beli"],
+					"tgl_beli" => $dp["tgl_beli"],
+					"no_resi" => $noresi,
+					"kode_pembayaran" => $kode_pembayaran
+				];
+				$this->db->insert("penjualan", $data);
+			}
+
+			$this->deleteItemTransaksi();
 			$this->session->set_userdata("crudsukses", "Transaction Successfully");
 			redirect("Dashboard/transaksi");
 		}
 	}
+
+	public function createFaktur()
+	{
+		$transaksi = $this->db->get_where("penjualan", ["tgl_beli" => date("Y-m-d")])->result_array();
+		if (count($transaksi)) {
+			$noresi = $transaksi[count($transaksi) - 1]["no_resi"];
+			$noresi = substr($noresi, -5);
+			$noresi = intval($noresi) + 1;
+			$noresi = "T-".date("dmy").sprintf("%05s", strval($noresi));
+		}else {
+			$noresi = "T-".date("dmy")."00001";
+		}
+
+		return $noresi;
+	}
+
 
 	
 	public function riwayat_transaksi($day = null)
 	{
 		$this->_data["title"] = "DASHBOARD | RIWAYAT TRANSAKSI";
 		if ($day) {
-			$this->_data["product_sold"] = $this->dbuser->select("name_produk, hrg_jual, kategory, jml_pembelian, tgl_transaksi, no_resi")
+			$this->_data["product_sold"] = $this->db->select("nama_produk, hrg_jual, kategory, jml_beli, tgl_beli, no_resi")
 														->order_by("no_resi", "ASC")
-														->from("transaksi")
-														->where("tgl_transaksi", date("Y-m-d"))
-														->where("kode_pembayaran !=", NULL)
-														->join("produk", "produk.kd_produk = transaksi.kd_produk")
+														->from("penjualan")
+														->where("tgl_beli", date("Y-m-d"))
+														->join("produk", "produk.kd_produk = penjualan.kd_produk")
 														->join("kategory_produk", "kategory_produk.id_kategory = produk.id_kategory")
 														->get()->result_array();
 		}else {
-			$this->_data["product_sold"] = $this->dbuser->select("name_produk, hrg_jual, kategory, jml_pembelian, tgl_transaksi, no_resi")
+			$this->_data["product_sold"] = $this->db->select("nama_produk, hrg_jual, kategory, jml_beli, tgl_beli, no_resi")
 														->order_by("no_resi", "ASC")
-														->from("transaksi")
-														->where("kode_pembayaran !=", NULL)
-														->join("produk", "produk.kd_produk = transaksi.kd_produk")
+														->from("penjualan")
+														->join("produk", "produk.kd_produk = penjualan.kd_produk")
 														->join("kategory_produk", "kategory_produk.id_kategory = produk.id_kategory")
 														->get()->result_array();
 		}
@@ -336,9 +292,38 @@ class Dashboard extends CI_Controller {
 		$this->load->view("templates/footer");
 	}
 
+// ======================================== LAPORAN =============================================== //
+
 	public function laporan_harian()
 	{
-		echo "coming soon";
+		$this->_data["title"] = "DASHBOARD | LAPORAN HARIAN";
+		// $this->_data["pHarian"] = $this->db->select("nama_produk, hrg_jual, jml_beli, tgl_beli")
+		// 								   ->from("penjualan")
+		// 								   ->where("tgl_beli", date("Y-m-d"))
+		// 								   ->join("produk", "produk.kd_produk = penjualan.kd_produk")
+		// 								   ->get()->result_array();
+
+		$this->load->view("templates/header", $this->_data);
+		$this->load->view("Dashboard/laporan_harian", $this->_data);
+		$this->load->view("templates/footer");
+	}
+
+	public function getDataHarian($date)
+	{
+		$data["soldProduk"] = $this->db->get_where("penjualan", ["tgl_beli" => $date])->num_rows();
+		$data["earningToday"] = $this->db->select("sum(jml_bayar) as total_bayar")
+													->from("pembayaran")->where("tgl_pembayaran", $date)
+													->get()->row_array();
+		$data["pHarian"] = $this->db->select("nama_produk, hrg_jual, jml_beli, tgl_beli")
+										   ->from("penjualan")
+										   ->where("tgl_beli", $date)
+										   ->join("produk", "produk.kd_produk = penjualan.kd_produk")
+										   ->get()->result_array();
+		if (count($data["pHarian"])) {
+			return $this->load->view("transaksi/data_laporan_harian", $data);
+		}else {
+			echo json_encode(["msg" => "Tidak ada data transaksi pada tanggal ini"]);
+		}
 	}
 
 	public function laporan_bulanan()
@@ -348,47 +333,6 @@ class Dashboard extends CI_Controller {
 
 
 // ==================================================================================================== //
-
-	function make_table_user()
-    {
-		$table_kategory = "CREATE TABLE IF NOT EXISTS kategory_produk (".
-							"id_kategory varchar(10) PRIMARY KEY,".
-							"kategory varchar(100)".
-							")"; 
-
-        $table_produk = "CREATE TABLE IF NOT EXISTS produk (".
-							"kd_produk varchar(100) PRIMARY KEY,".
-							"name_produk varchar(100),".
-							"hrg_produk int(20),".
-							"hrg_jual int(20),".
-							"volume varchar(20),".
-							"id_kategory varchar(10) NOT NULL,".
-							"stok_produk int,".
-							"FOREIGN KEY (id_kategory) REFERENCES kategory_produk(id_kategory)".
-							")"; 
-
-        $table_transaksi = "CREATE TABLE IF NOT EXISTS transaksi (".
-							"id_transaksi int AUTO_INCREMENT PRIMARY KEY,".
-							"kd_produk varchar(100),".
-							"jml_pembelian int,".
-							"no_resi varchar(100),".
-							"tgl_transaksi date,".
-							"kode_pembayaran varchar(100),".
-							"FOREIGN KEY (kode_pembayaran) REFERENCES pembayaran(kode_pembayaran),".
-							"FOREIGN KEY (kd_produk) REFERENCES produk(kd_produk)".
-							")"; 
-
-        $table_pembayaran = "CREATE TABLE IF NOT EXISTS pembayaran (".
-							"kode_pembayaran varchar(100) NOT NULL PRIMARY KEY,".
-							"tgl_pembayaran date,".
-							"jml_bayar int(20)".
-							")"; 
-
-		$this->dbuser->query($table_kategory);
-		$this->dbuser->query($table_produk);
-		$this->dbuser->query($table_pembayaran);
-		$this->dbuser->query($table_transaksi);
-    }
 
 	public function tesPrint()
 	{

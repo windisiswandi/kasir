@@ -31,14 +31,14 @@
                         <tr>
                             <td><?= $i++; ?></td>
                             <td><?= $item["no_resi"]; ?></td>
-                            <td><?= $item["tgl_transaksi"]; ?></td>
-                            <td><?= $item["name_produk"]; ?></td>
+                            <td><?= $item["tgl_beli"]; ?></td>
+                            <td><?= $item["nama_produk"]; ?></td>
                             <td><?= $item["kategory"]; ?></td>
-                            <td><?= $item["jml_pembelian"]; ?></td>
+                            <td><?= $item["jml_beli"]; ?></td>
                             <td><?= "Rp " . number_format($item["hrg_jual"],0,',','.'); ?></td>
                             <td>
                                 <?php 
-                                    $hrg_total = $item["jml_pembelian"] * $item["hrg_jual"];
+                                    $hrg_total = $item["jml_beli"] * $item["hrg_jual"];
                                     echo "Rp " . number_format($hrg_total,0,',','.');
                                 ?>
                             </td>
