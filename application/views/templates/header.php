@@ -61,6 +61,9 @@
                 <a class="nav-link" href="<?= base_url("Dashboard/produks"); ?>" style="padding:10px 15px 10px 15px;">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Produks</span></a>
+                <a class="nav-link" href="<?= base_url("Dashboard/kategori_produk"); ?>" style="padding:10px 15px 10px 15px;">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Kategori Produk</span></a>
             </li>
 
             <!-- Nav Item - Pages Collapse Menu -->

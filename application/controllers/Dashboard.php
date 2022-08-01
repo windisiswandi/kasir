@@ -26,6 +26,7 @@ class Dashboard extends CI_Controller {
 											   ->from("produk")
 											   ->join("kategori", "kategori.id_kategori = produk.id_kategori")
 											   ->get()->result_array();
+			$this->_data['kategori'] = $this->db->get('kategori')->result_array();
 			$this->_data["produk_kategory"] = $this->db->get("kategori")->result_array();
 			$this->_data["dataUser"] = $this->db->get_where("user", ["username" =>  $this->session->userdata("username")])->row_array();
 		}
@@ -43,7 +44,15 @@ class Dashboard extends CI_Controller {
 	{
 		$this->_data["title"] = "DASHBOARD | PRODUK";
 		$this->load->view('templates/header', $this->_data);
-		$this->load->view('Dashboard/produks', $this->_data);
+		$this->load->view('Dashboard/kategori_produk', $this->_data);
+		$this->load->view('templates/footer', $this->_data);
+	}
+
+	public function kategori_produk()
+	{
+		$this->_data["title"] = "DASHBOARD | KATEGORI PRODUK";
+		$this->load->view('templates/header', $this->_data);
+		$this->load->view('Dashboard/kategori_produk', $this->_data);
 		$this->load->view('templates/footer', $this->_data);
 	}
 
@@ -64,14 +73,35 @@ class Dashboard extends CI_Controller {
 
 	public function addProduct()
 	{
+		$file_foto = $_FILES['file_foto'];
+		$tempdirfoto = FCPATH."/assets/img/imgProduk/";
 		$data = [
 			"kd_produk" => $this->input->post("kd_produk"),
 			"nama_produk" => $this->input->post("nama_produk"),
-			"hrg_produk" => $this->input->post("hrg_produk"),
+			"hrg_beli" => $this->input->post("hrg_beli"),
 			"hrg_jual" => $this->input->post("hrg_jual"),
-			"id_kategory" => $this->input->post("id_kategory"),
-			"stok" => $this->input->post("stok")
+			"id_kategori" => $this->input->post("id_kategori"),
+			"stok_produk" => $this->input->post("stok"),
+			"notice_stok" => $this->input->post('notice_stok'),
+			"ket_produk" => $this->input->post('ket_produk')
 		];
+
+		if (!($file_foto['error'] == 4)) {
+			$extensiFoto = explode('.', $file_foto['name']);
+			$extensiFoto = end($extensiFoto);
+			$extensiGambar = ['jpg', 'JPEG', 'png'];
+
+			if (in_array($extensiFoto, $extensiGambar)) {
+				$namaFoto = uniqid().".$extensiFoto";
+				$target_path = $tempdirfoto.$namaFoto;
+				move_uploaded_file($file_foto['tmp_name'], $target_path);
+				$data["foto_produk"] = $namaFoto;
+			}else {
+				$this->session->set_userdata('crudfailed', "File yang diinput harus tipe gambar");
+				redirect("Dashboard/produks");
+			}
+
+		}
 
 		if ($this->Data_model->insertProduk($data)) {
 			$this->session->set_userdata("crudsukses", "Produk Successfully to Added");
@@ -88,15 +118,36 @@ class Dashboard extends CI_Controller {
 			if ($data) {
 
 				if ($this->input->post("submit")) {
-
+					$file_foto = $_FILES['file_foto'];
+					$tempdirfoto = FCPATH."/assets/img/imgProduk/";
 					$dataUpdate = [
 						"kd_produk" => $this->input->post("kd_produk"),
 						"nama_produk" => $this->input->post("nama_produk"),
-						"hrg_produk" => $this->input->post("hrg_produk"),
+						"hrg_beli" => $this->input->post("hrg_beli"),
 						"hrg_jual" => $this->input->post("hrg_jual"),
-						"id_kategory" => $this->input->post("id_kategory"),
-						"stok" => $this->input->post("stok")
+						"id_kategori" => $this->input->post("id_kategori"),
+						"stok_produk" => $this->input->post("stok_produk"),
+						"notice_stok" => $this->input->post('notice_stok'),
+						"ket_produk" => $this->input->post('ket_produk')
 					];
+
+					if (!($file_foto['error'] == 4)) {
+						$extensiFoto = explode('.', $file_foto['name']);
+						$extensiFoto = end($extensiFoto);
+						$extensiGambar = ['jpg', 'JPEG', 'png'];
+			
+						if (in_array($extensiFoto, $extensiGambar)) {
+							$namaFoto = uniqid().".$extensiFoto";
+							$target_path = $tempdirfoto.$namaFoto;
+							move_uploaded_file($file_foto['tmp_name'], $target_path);
+							$dataUpdate["foto_produk"] = $namaFoto;
+							unlink($tempdirfoto.$data['foto_produk']);
+						}else {
+							$this->session->set_userdata('crudfailed', "File yang diinput harus tipe gambar");
+							redirect("Dashboard/updateProduk/$kd_produk");
+						}
+			
+					}
 					
 					if ($this->Data_model->updateProduk($dataUpdate)) {
 						$this->session->set_userdata("crudsukses", "Produk Successfully to Updated");
@@ -122,6 +173,12 @@ class Dashboard extends CI_Controller {
 	public function deleteProduk($kd_produk = null)
 	{
 		if ($kd_produk) {
+			$data = $this->db->select('foto_produk')
+							 ->from('produk')
+							 ->where('kd_produk', $kd_produk)
+							 ->get()->row_array();
+
+			unlink(FCPATH."/assets/img/imgProduk/".$data['foto_produk']);
 			if ($this->db->delete("produk", ["kd_produk" => $kd_produk])) {
 				$this->session->set_userdata("crudsukses", "Produk Successfullt to Deleted");
 				redirect("Dashboard/produks");
