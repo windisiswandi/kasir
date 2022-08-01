@@ -59,7 +59,7 @@ class Dashboard extends CI_Controller {
 
 	public function transaksi()
 	{
-		$this->_data["tLast"] = $this->db->select("nama_produk, jml_beli, hrg_jual, diskon")
+		$this->_data["tLast"] = $this->db->select("nama_produk, jml_beli, hrg_jual, diskon, id_item")
 										 ->from("temp_penjualan")
 										 ->where('id_user', $this->_data['dataUser']['id_user'])
 										 ->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
@@ -90,7 +90,7 @@ class Dashboard extends CI_Controller {
 		if (!($file_foto['error'] == 4)) {
 			$extensiFoto = explode('.', $file_foto['name']);
 			$extensiFoto = end($extensiFoto);
-			$extensiGambar = ['jpg', 'JPEG', 'png'];
+			$extensiGambar = ['jpg', 'JPEG', 'jpeg', 'png'];
 
 			if (in_array($extensiFoto, $extensiGambar)) {
 				$namaFoto = uniqid().".$extensiFoto";
@@ -135,7 +135,7 @@ class Dashboard extends CI_Controller {
 					if (!($file_foto['error'] == 4)) {
 						$extensiFoto = explode('.', $file_foto['name']);
 						$extensiFoto = end($extensiFoto);
-						$extensiGambar = ['jpg', 'JPEG', 'png'];
+						$extensiGambar = ['jpg', 'JPEG', 'jpeg', 'png'];
 			
 						if (in_array($extensiFoto, $extensiGambar)) {
 							$namaFoto = uniqid().".$extensiFoto";
@@ -237,9 +237,14 @@ class Dashboard extends CI_Controller {
 		$produk = $this->db->get_where("produk", ["kd_produk" => $kd_produk]);
 
 		if ($produk->num_rows()) {
-			if (!($produk->row_array()["stok"] <= 0)) {
-				$this->db->update("produk", ["stok"=>$produk->row_array()["stok_produk"]-$jml], "kd_produk = $kd_produk");
-			}	
+			if ($produk->row_array()["stok_produk"] < $jml) {
+				echo json_encode(["error"=>false, "msg"=>"Stok produk tidak mencukupi"]);
+				die;
+			}else {
+				if (!($produk->row_array()["stok_produk"] <= 0)) {
+					$this->db->update("produk", ["stok_produk"=>$produk->row_array()["stok_produk"]-$jml], "kd_produk = $kd_produk");
+				}
+			}
 
 			$dataTransaksi = [
 				"kd_produk" => $kd_produk,
@@ -249,7 +254,7 @@ class Dashboard extends CI_Controller {
 			];
 			
 			if ($this->db->insert("temp_penjualan", $dataTransaksi)) {
-				$result["data"] = $this->db->select("nama_produk, jml_beli, hrg_jual, id_item")->from("temp_penjualan")
+				$result["data"] = $this->db->select("*")->from("temp_penjualan")
 															->where("id_user", $this->_data["dataUser"]["id_user"])
 															->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
 															->get()->result_array();
@@ -265,17 +270,22 @@ class Dashboard extends CI_Controller {
 	public function deleteItemTransaksi()
 	{
 		if (!$this->input->post("id")) {
+			$this->Data_model->returnTempPenjualan();
+
 			$this->db->where("id_user",  $this->_data["dataUser"]["id_user"]);
 			$this->db->delete("temp_penjualan");
 		}else {
+			$this->Data_model->returnTempPenjualan($this->input->post("id"));
+
 			$this->db->where("id_item", $this->input->post("id"));
 			$this->db->where("id_user", $this->_data["dataUser"]["id_user"]);
 			if ($this->db->delete('temp_penjualan')) {
-				$result["data"] = $this->db->select("nama_produk, jml_beli, hrg_jual, id_item")
+				$result["data"] = $this->db->select("*")
 										   ->from("temp_penjualan")
 										   ->where("id_user", $this->_data["dataUser"]["id_user"])
 										   ->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
 										   ->get()->result_array();
+
 				return $this->load->view("transaksi/data", $result);
 			}
 		}
@@ -283,13 +293,13 @@ class Dashboard extends CI_Controller {
 
 	public function totalBayar()
 	{
-		$data = $this->db->select("hrg_jual, jml_beli")->from("temp_penjualan")
+		$data = $this->db->select("*")->from("temp_penjualan")
 										->where("id_user", $this->_data["dataUser"]["id_user"])
 										->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
 										->get()->result_array();
 		$totalBayar = 0;
 		foreach ($data as $bayar) {
-			$totalBayar += $bayar["hrg_jual"] * $bayar["jml_beli"];
+			$totalBayar += ($bayar["hrg_jual"] * $bayar["jml_beli"]) - $bayar['diskon'];
 		}
 		echo json_encode(["totalBayar" => "Rp ".number_format($totalBayar,0,'','.')]);
 	}

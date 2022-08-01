@@ -14,7 +14,7 @@
                         <?php if(@$foto_produk) : ?>
                             <img class="imgProduk" src="<?= base_url('assets/img/imgProduk/').$foto_produk; ?>">
                         <?php else : ?>
-                            <img class="imgProduk" src="<?= base_url('assets/img/imgProduk/no_image.jpg'); ?>" alt="">
+                            <img class="imgProduk" src="<?= base_url('assets/img/imgProduk/no_image.jpg'); ?>" >
                         <?php endif; ?>
                     </div>
                     <div class="col-sm-8">   

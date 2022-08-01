@@ -79,23 +79,33 @@
                                 <th>Qty</th>
                                 <th>Harga</th>
                                 <th>Diskon</th>
+                                <th>Sub Total</th>
                                 <th>Total</th>
                                 <th>#</th>
                             </tr>
                         </thead>
                         <tbody id="transaksiBody">
                         <?php if(count($tLast)) : ?>
-                            <?php foreach($tLast as $t) : ?>
+                            <?php 
+                                $subTotal; $total;
+                                foreach($tLast as $t) : ?>
                                 <tr>
                                     <td><?= $t["nama_produk"]; ?></td>
                                     <td><?= $t["jml_beli"]; ?></td>
-                                    <td><?= "Rp " . number_format($t["hrg_jual"],0,',','.'); ?></td>
+                                    <td><?= number_format($t["hrg_jual"],0,',','.'); ?></td>
+                                    <td><?= number_format($t["diskon"],0,',','.'); ?></td>
                                     <td>
                                         <?php 
-                                            $total = $t["jml_beli"]*$t["hrg_jual"];
-                                            echo "Rp ".number_format($total, 0,',','.');
+                                            $subTotal = $t["jml_beli"]*$t["hrg_jual"];
+                                            echo number_format($subTotal,0,',','.'); 
                                         ?>
-                                    </td><td class="text-center text-danger" onclick="deleteTransaksiItem(<?= $t['id_item'] ?>)"><i class="fas fa-window-close"></i></a></td>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                            $total = $subTotal - $t['diskon'];
+                                            echo number_format($total, 0,',','.');
+                                        ?>
+                                    </td><td class="text-center text-danger" onclick="deleteTransaksiItem(<?= $t['id_item']; ?>)"><i class="fas fa-window-close"></i></a></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?> 
@@ -121,8 +131,47 @@
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
-            <div class="modal-body">
-
+            <div class="modal-body" style="font-size: 16px;">
+                <div class="table-responsive">
+                    <table class="table table-bordered " id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Foto</th>
+                                <th>Nama Produk</th>
+                                <th>Harga</th>
+                                <th>Kategory</th>
+                                <th>Stok</th>
+                                <th>Ket</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($produks as $item) : ?>
+                                <tr>
+                                    <td>
+                                        <?php if($item['foto_produk']) : ?>
+                                            <img src="<?= base_url('assets/img/imgProduk/').$item['foto_produk']; ?>" width="50">
+                                        <?php else : ?>
+                                            <img src="<?= base_url('assets/img/imgProduk/no_image.jpg'); ?>" width="50">
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?= $item["nama_produk"]; ?></td>
+                                    <td><?= number_format($item["hrg_jual"],0,',','.'); ?></td>
+                                    <td><?= $item["nama_kategori"]; ?></td>
+                                    <td><?= $item["stok_produk"]; ?></td>
+                                    <td><?= $item["ket_produk"]; ?></td>
+                                    <td class="text-center">
+                                        <?php if($item['stok_produk'] > 0) : ?>
+                                            <button onclick="pilihItem(`<?= $item['kd_produk']; ?>`)" class="btn btn-success">Pilih</button>
+                                        <?php else : ?>
+                                            <button class="btn btn-secondary">Pilih</button>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -146,33 +195,13 @@
         $("body ul.navbar-nav").addClass("toggled");
         totalBayar()
 
-        $("input[name='kd_produk'], input[name='jml']").keydown(e => {
-            if (e.keyCode == 13) {
-                $.ajax({
-                    type: "POST",
-                    url: "<?= base_url('Dashboard/insertTransaksi/') ?>",
-                    data: {
-                        kd_produk:  $("input[name='kd_produk']").val(),
-                        diskon: $("input[name='diskon']").val(),
-                        qty: $("input[name='jml']").val()
-                    },
-                    success: response => {
-                        var data = response
-                        try {
-                            data = JSON.parse(data)
-                            $("#msgError").text(data.msg)
-                        }catch(err){
-                            $("input[name='kd_produk']").val('')
-                            $("#transaksiBody").html(response)
-                            $("#msgError").text("")
-                            totalBayar()
-                        }
-                    }
-                })
-            }else if (e.keyCode == 32) {
-                $('.listProduk').click()
-            }
-        })
+
+        $("input[name='kd_produk']").focus()
+        
+        // $("input[name='kd_produk'], input[name='jml'], input[name='diskon']").keydown(e => {
+        //     if (e.keyCode == 13) insertTransaksi()
+        //     else if (e.keyCode == 32) $('.listProduk').click()
+        // })
 
         $("input[name='bayar']").keyup(e => {
             var bayar = $("input[name='bayar']").val().replace(/\./gi, "").replace("Rp ", ""),
@@ -182,11 +211,12 @@
         })
 
         $(window).keydown(e => {
-            if (e.keyCode == 119) {
-                $("#submitPayment").click();
-            }else if (e.keyCode == 27) {
-                $("input[name='kd_produk']").focus()
-            }
+            if (e.keyCode == 13) insertTransaksi()
+            else if (e.keyCode == 27) $("input[name='kd_produk']").focus()
+            else if (e.keyCode == 39) $("#submitPayment").click()
+            else if (e.keyCode == 32) $('.listProduk').click()
+            else if (e.keyCode == 46) deleteTransaksiItem()
+            
         })
 
     })
@@ -225,6 +255,32 @@
                 }
             })
         }
+    }
+
+    function insertTransaksi() {
+        $.ajax({
+            type: "POST",
+            url: "<?= base_url('Dashboard/insertTransaksi/') ?>",
+            data: {
+                kd_produk:  $("input[name='kd_produk']").val(),
+                diskon: $("input[name='diskon']").val(),
+                qty: $("input[name='jml']").val()
+            },
+            success: response => {
+                var data = response
+                try {
+                    data = JSON.parse(data)
+                    $("#msgError").text(data.msg)
+                }catch(err){
+                    $("input[name='kd_produk']").val('')
+                    $("input[name='diskon']").val('')
+                    $("input[name='jml']").val('1')
+                    $("#transaksiBody").html(response)
+                    $("#msgError").text("")
+                    totalBayar()
+                }
+            }
+        })
     }
 
     function totalBayar() {
@@ -272,4 +328,8 @@
         }
     }
 
+    function pilihItem(kd_produk) {
+        $("input[name='kd_produk']").val(kd_produk)
+        $('.close').click()
+    }
 </script>
