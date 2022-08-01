@@ -122,12 +122,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group col">
-                                <label for="exampleInputEmail1" class="font-weight-bold">Keterangan</label>
-                                <textarea name="ket_produk" class="form-control" id="exampleFormControlTextarea1" rows="3" placeholder="Optional"></textarea>
-                            </div>
-                        </div>
+                      
                         <div class="form-row align-items-center" id="formKategory" style="display: none;">
                             <div class="form-group col-auto">
                                 <button type="button" class="close" aria-label="Close">
@@ -139,6 +134,13 @@
                             </div>
                             <div class="form-group col">
                                 <div class="btn btn-success" id="btnkategory"><i class="fas fa-plus text-white"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col">
+                                <label for="exampleInputEmail1" class="font-weight-bold">Keterangan</label>
+                                <textarea name="ket_produk" class="form-control" id="exampleFormControlTextarea1" rows="3" placeholder="Optional"></textarea>
                             </div>
                         </div>
                     </div>
@@ -172,7 +174,7 @@
                 },
                 dataType: "json",
                 success: (response) => {
-                    // $("#formKategory").slideToggle();
+                    $("#formKategory").slideToggle();
                     $("input[name='kategory']").val('')
                     if (response.status) {
                         $(".msg").html(`<div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -197,7 +199,7 @@
 
         function updateKategory() {
             $.ajax({
-                url: `<?= base_url('Dashboard/updateKategory') ?>`,
+                url: `<?= base_url('Dashboard/getKategori') ?>`,
                 type: "GET",
                 dataType: "json",
                 success: (response) => {
@@ -206,7 +208,7 @@
                         option += `<option value="${element.id_kategory}">${element.kategory}</option>`;
                     });
 
-                    $("select[name='id_kategory']").html(option)
+                    $("select[name='id_kategori']").html(option)
                 },
                 error: err => {
                     alert('kesalahan pada update kategori');

@@ -28,6 +28,7 @@ class Dashboard extends CI_Controller {
 											   ->get()->result_array();
 			$this->_data['kategori'] = $this->db->get('kategori')->result_array();
 			$this->_data["produk_kategory"] = $this->db->get("kategori")->result_array();
+			$this->_data['notice_produk'] = $this->db->get_where('produk', 'produk.stok_produk <= produk.notice_stok')->result_array();
 			$this->_data["dataUser"] = $this->db->get_where("user", ["username" =>  $this->session->userdata("username")])->row_array();
 		}
 	}
@@ -44,7 +45,7 @@ class Dashboard extends CI_Controller {
 	{
 		$this->_data["title"] = "DASHBOARD | PRODUK";
 		$this->load->view('templates/header', $this->_data);
-		$this->load->view('Dashboard/kategori_produk', $this->_data);
+		$this->load->view('Dashboard/produks', $this->_data);
 		$this->load->view('templates/footer', $this->_data);
 	}
 
@@ -197,7 +198,22 @@ class Dashboard extends CI_Controller {
 			echo json_encode(["status"=>false, "msg"=>"Gagal menambah kategory"]);
 		}
 	}
-	public function updateKategory()
+
+	public function deleteKategori($id_kategori)
+	{
+		$getProduk = $this->db->get_where('produk', ['id_kategori' => $id_kategori]);
+
+		if (!$getProduk->num_rows()) {
+			$this->db->delete('kategori', ['id_kategori' => $id_kategori]);
+			$this->session->set_userdata("crudsukses", "Kategori Successfull to Deleted");
+			redirect("Dashboard/kategori_produk");
+		}else {
+			$this->session->set_userdata("crudfailed", "Produk dengan kategori ini masih ada");
+			redirect("Dashboard/kategori_produk");
+		}
+	}
+
+	public function getKategori()
 	{
 		$kategory = $this->db->get("kategori")->result_array();
 		$data["data"] = [];
