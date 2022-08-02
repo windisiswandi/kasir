@@ -52,15 +52,17 @@
                 <?= $dataUser["username"]; ?>
             </div>
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active" >
+            <li class="nav-item <?= @$dActive ? 'active' : ''; ?>" >
                 <a class="nav-link" href="<?= base_url(); ?>" style="padding:16px 15px 5px 15px;">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item <?= @$pActive ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?= base_url("Dashboard/produks"); ?>" style="padding:10px 15px 10px 15px;">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <i class="fab fa-product-hunt"></i>
                     <span>Produks</span></a>
+            </li>
+            <li class="nav-item <?= @$kActive ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?= base_url("Dashboard/kategori_produk"); ?>" style="padding:10px 15px 10px 15px;">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Kategori Produk</span></a>
@@ -78,15 +80,15 @@
             </div>
 
             <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
+            <li class="nav-item <?= @$active ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?= base_url('Dashboard/laporan_harian') ?>" style="padding:16px 15px 5px 15px;">
-                    <i class="fas fa-table"></i>
+                <i class="fas fa-calendar-alt"></i>
                     <span>Laporan Harian</span>
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item <?= @$active ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?= base_url('Dashboard/laporan_bulanan') ?>" style="padding:10px 15px 5px 15px;">
-                    <i class="fas fa-table"></i>
+                <i class="fas fa-calendar-alt"></i>
                     <span>Laporan Bulanan</span>
                 </a>
             </li>
@@ -94,15 +96,15 @@
             <div class="sidebar-heading" style="margin-top: 20px;">
                 Transaksi
             </div>
-            <li class="nav-item">
+            <li class="nav-item <?= @$tActive ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?= base_url('Dashboard/transaksi') ?>" style="padding:16px 15px 5px 15px;">
-                    <i class="fas fa-table"></i>
+                    <i class="fab fa-shopify"></i>
                     <span>Transaksi</span>
                 </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item <?= @$rActive ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?= base_url('Dashboard/riwayat_transaksi') ?>" style="padding:10px 15px 5px 15px;">
-                    <i class="fas fa-table"></i>
+                    <i class="fab fa-shopify"></i>
                     <span>Riwayat Transaksi</span>
                 </a>
             </li>
@@ -156,7 +158,7 @@
                                                 <div class="status-indicator bg-success"></div>
                                             </div>
                                             <div class="font-weight-bold">
-                                                <div class="text-truncate">Stok <?= $notice['nama_produk']; ?> akan habis</div>
+                                                <div class="text-truncate"><?= $notice['nama_produk']; ?></div>
                                                 <div class="small text-gray-500">Sisa stok : <?= $notice['stok_produk']; ?></div>
                                             </div>
                                         </a>

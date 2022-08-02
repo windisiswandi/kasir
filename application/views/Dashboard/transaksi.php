@@ -37,20 +37,27 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col">
-            <div class="card shadow mb-4">
+            <div class="card shadow mb-4" style="font-size: 14px;">
                 <!-- Card Header - Dropdown -->
                 <div
                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         <div class="col-auto">
                             <h5 class="font-weight-bold text-primary">Transaksi</h5>
                         </div>
-                        <div class="col-auto">
-                            <span class="font-weight-bold" data-toggle="modal" data-target="#addModal">Press key F8 to Insert</span>
-                        </div>
                 </div>
                 <!-- Card Body -->
                 <div class="card-body">
-                    <div class="row mt-4">
+                    <div class="row">
+                        <div class="form-group col-sm-3">
+                            <label for="exampleInputEmail1" class="font-weight-bold">No. Invoice</label>
+                            <input type="text" class="form-control" name="nomor_invoice" readonly value="123135">
+                        </div>
+                        <div class="form-group col-sm-3">
+                            <label for="exampleInputEmail1" class="font-weight-bold">Nama Pelanggan</label>
+                            <input type="text" class="form-control" name="nama_pelanggan" placeholder="Optional">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
                         <div class="form-group col-sm-3">
                             <label for="exampleInputEmail1" class="font-weight-bold">Kode Product</label>
                             <input type="text" class="form-control" name="kd_produk" required>
@@ -78,8 +85,8 @@
                                 <th>Name Product</th>
                                 <th>Qty</th>
                                 <th>Harga</th>
-                                <th>Diskon</th>
                                 <th>Sub Total</th>
+                                <th>Diskon</th>
                                 <th>Total</th>
                                 <th>#</th>
                             </tr>
@@ -93,13 +100,13 @@
                                     <td><?= $t["nama_produk"]; ?></td>
                                     <td><?= $t["jml_beli"]; ?></td>
                                     <td><?= number_format($t["hrg_jual"],0,',','.'); ?></td>
-                                    <td><?= number_format($t["diskon"],0,',','.'); ?></td>
                                     <td>
                                         <?php 
                                             $subTotal = $t["jml_beli"]*$t["hrg_jual"];
                                             echo number_format($subTotal,0,',','.'); 
                                         ?>
                                     </td>
+                                    <td><?= number_format($t["diskon"],0,',','.'); ?></td>
                                     <td>
                                         <?php 
                                             $total = $subTotal - $t['diskon'];
@@ -110,6 +117,7 @@
                             <?php endforeach; ?>
                         <?php endif; ?> 
                         </tbody>
+                        
                     </table>
            
                 </div>
@@ -278,6 +286,7 @@
                     $("#transaksiBody").html(response)
                     $("#msgError").text("")
                     totalBayar()
+                    $("input[name='kd_produk']").focus()
                 }
             }
         })
@@ -331,5 +340,6 @@
     function pilihItem(kd_produk) {
         $("input[name='kd_produk']").val(kd_produk)
         $('.close').click()
+        $("input[name='kd_produk']").focus()
     }
 </script>

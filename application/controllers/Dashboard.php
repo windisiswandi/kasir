@@ -36,6 +36,7 @@ class Dashboard extends CI_Controller {
 	public function index()
 	{
 		$this->_data["title"] = "DASHBOARD";
+		$this->_data['dActive'] = true;
 		$this->load->view('templates/header', $this->_data);
 		$this->load->view('Dashboard/main', $this->_data);
 		$this->load->view('templates/footer', $this->_data);
@@ -44,6 +45,7 @@ class Dashboard extends CI_Controller {
 	public function produks()
 	{
 		$this->_data["title"] = "DASHBOARD | PRODUK";
+		$this->_data['pActive'] = true;
 		$this->load->view('templates/header', $this->_data);
 		$this->load->view('Dashboard/produks', $this->_data);
 		$this->load->view('templates/footer', $this->_data);
@@ -52,6 +54,7 @@ class Dashboard extends CI_Controller {
 	public function kategori_produk()
 	{
 		$this->_data["title"] = "DASHBOARD | KATEGORI PRODUK";
+		$this->_data['kActive'] = true;
 		$this->load->view('templates/header', $this->_data);
 		$this->load->view('Dashboard/kategori_produk', $this->_data);
 		$this->load->view('templates/footer', $this->_data);
@@ -65,6 +68,7 @@ class Dashboard extends CI_Controller {
 										 ->join("produk", "produk.kd_produk = temp_penjualan.kd_produk")
 										 ->get()->result_array();
 		$this->_data["title"] = "Transaksi";
+		$this->_data['tActive'] = true;
 		$this->load->view('templates/header', $this->_data);
 		$this->load->view('Dashboard/transaksi', $this->_data);
 		$this->load->view('templates/footer');
@@ -370,7 +374,7 @@ class Dashboard extends CI_Controller {
 														->join("kategory_produk", "kategory_produk.id_kategory = produk.id_kategory")
 														->get()->result_array();
 		}
-
+		$this->_data['rActive'] = true;
 		$this->load->view("templates/header", $this->_data);
 		$this->load->view("Dashboard/product_sold", $this->_data);
 		$this->load->view("templates/footer");
